@@ -1,0 +1,53 @@
+---
+title: "pull3 data clean 3.31"
+output: html_notebook
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+read in the data
+```{r}
+websci<-read.csv("/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/3.31.21\ Data\ Pull/3.31_webofscience.csv")
+websci<-websci[,c(2,9,22,44,45)]
+pubmed<-read.csv("/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/3.31.21\ Data\ Pull/3.31_pubmed.csv")
+pubmed<-pubmed[c(1:26),] #capture all trials that are from 2/1/21
+
+pubmed_notitle<-read.csv("/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/3.31.21\ Data\ Pull/3.31_pubmed_wo_title.csv")
+pubmed_notitle<-pubmed_notitle[c(1:77),] #capture all trials that are from 2/1/21
+
+ctrials<-read.csv("/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/3.31.21\ Data\ Pull/3.31_clinicaltrials.csv")
+#note to self- 3/31
+#no trials between 2/1/21 and 3/31/21 (look at completion date); potentially 5 studies (last.updated)
+```
+
+
+```{r}
+websci1<-dplyr::filter(websci, grepl('trial|Trial', Article.Title)) #title with trial
+websci2<-dplyr::filter(websci1, !grepl('protocol|Protocol|plan', Article.Title)) #get rid of protocol
+websci3<-dplyr::filter(websci2, !grepl('JAN|DEC', Publication.Date)) #get before 2/1/21
+
+pubmed1<-dplyr::filter(pubmed, grepl('trial|Trial', Title)) #title with trial
+pubmed2<-dplyr::filter(pubmed1, !grepl('protocol|Protocol|plan', Title)) #get rid of protocol
+
+pubmed1_notitle<-dplyr::filter(pubmed_notitle, !grepl('protocol|Protocol|plan', Title)) #get rid of protocol
+
+ctrials1<-dplyr::filter(ctrials, grepl('March|February', Last.Update.Posted)) #get before 2/1/21
+
+```
+
+```{r}
+pm_combine<-merge(pubmed2,pubmed1_notitle, by="Title",all=T)
+# colnames(websci3)[which(names(websci3) == "Article.Title")] <- "Title"
+combine<-merge(websci3,pm_combine,by="Title",all=T)
+combine1<-combine[!duplicated(combine$Title), ] #get rid of duplicate titles
+```
+
+```{r}
+library(openxlsx)
+write.xlsx(combine1, "/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/5.30.21\ Data\ Pull/websci_pubmed_combine.xlsx")
+```
+

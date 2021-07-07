@@ -1,0 +1,115 @@
+---
+title: "dataclean"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+data<-read.csv("/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/cdc_test.csv")
+```
+
+```{r}
+library(tidyverse)
+data1<-data[,c(2,3,4,11,12)] #keep column b,c,d,k,l
+data2<-dplyr::filter(data1, grepl('trial|Trial', Title)) #title with trial
+data2<-dplyr::filter(data2, !grepl('protocol', Title)) #get rid of protocol
+data3<-dplyr::filter(data2, grepl(' ', Author)) #get rid of no Authors
+```
+
+```{r}
+library(openxlsx)
+write.xlsx(data3, "/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/data3.xlsx")
+```
+
+```{r}
+wos<-read.csv("/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/webofscience_firstextract.csv")
+```
+
+```{r}
+wos1<-dplyr::filter(wos, grepl('trial|Trial', Title)) #title with trial
+wos2<-dplyr::filter(wos1, !grepl('protocol|Protocol|Update', Title)) #title with trial
+```
+
+```{r}
+write.xlsx(wos2, "/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/wos_clean1.xlsx")
+```
+
+```{r}
+web<-read.csv("/Users/joycepak/Documents/UNC\ Chapel\ Hill/savedrecs.csv")
+web1<-web[,c(1,2,7,8,17)]
+web2<-dplyr::filter(web1, grepl('trial|Trial', Title)) #title with trial
+web3<-dplyr::filter(web2, grepl(2020, Publication.Year)) #2020
+web4<-dplyr::filter(web3, !grepl('protocol|Protocol|plan', Title)) #get rid of protocol
+write.xlsx(web4, "/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/web3.xlsx")
+```
+
+```{r}
+pub<-read.csv("/Users/joycepak/Downloads/csv-coronaviru-set.csv")
+```
+
+```{r}
+#cdc
+pub<-read.csv("/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/cdc_10.21.csv")
+pub1<-dplyr::filter(pub, grepl(2020, Publication.Year)) #2020
+pub2<-dplyr::filter(pub1, !grepl('protocol|Protocol', Title)) #protocol
+write.xlsx(pub2, "/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/cdc_10.21.xlsx")
+```
+
+```{r}
+library("readxl")
+```
+
+
+```{r}
+#10.31 readings
+websci<-read.csv("/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/10.31/10.31_webofscience_extract.csv")
+websci1<-dplyr::filter(websci, grepl('trial|Trial', Title)) #title with trial
+websci2<-dplyr::filter(websci1, grepl(2020, Publication.Year)) #2020
+websci3<-dplyr::filter(websci2, !grepl('protocol|Protocol|plan', Title)) #get rid of protocol
+websci4<-websci3[,c(1,2,7,8,17)]
+
+pubmed<-read.csv("/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/10.31/10.31_pubmed.csv")
+pubmed1<-dplyr::filter(pubmed, grepl('trial|Trial', Title)) #title with trial
+pubmed2<-dplyr::filter(pubmed1, grepl(2020, Publication.Year)) #2020
+pubmed3<-dplyr::filter(pubmed2, !grepl('protocol|Protocol|plan', Title)) #get rid of protocol
+
+cdc<-read.csv("/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/10.31/cdc_Augustuntil9October2020.csv")
+cdc1<-dplyr::filter(cdc, grepl('trial|Trial', Title)) #title with trial
+cdc2<-dplyr::filter(cdc1, !grepl('protocol|Protocol|plan', Title)) #get rid of protocol
+cdc3<-dplyr::filter(cdc2, !grepl('ClinicalTrials', Name.of.Database)) #get rid of clinicaltrials
+cdc4<-dplyr::filter(cdc3, !grepl('Chinese|German|zh|Spanish|Italian|chi', Language))
+cdc5<-cdc4[,c(1:6,15)]
+```
+
+```{r}
+write.xlsx(websci4, "/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/10.31/websci_Rfilter.xlsx")
+write.xlsx(pubmed3, "/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/10.31/pubmed_Rfilter.xlsx")
+write.xlsx(cdc5, "/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/10.31/cdc_Rfilter.xlsx")
+write.xlsx(combine2, "/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/10.31/combined_Rfilter.xlsx")
+```
+
+```{r}
+combine<-merge(websci4,pubmed3,by="Title",all=T)
+combine1<-merge(combine,cdc5,by="Title",all=T)
+combine2<-combine1[!duplicated(combine1$Title), ] #get rid of duplicate titles
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

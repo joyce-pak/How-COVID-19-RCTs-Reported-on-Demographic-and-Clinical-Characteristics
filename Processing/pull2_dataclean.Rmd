@@ -1,0 +1,44 @@
+---
+title: "pull2_dataclean"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+read in the data
+```{r}
+websci<-read.csv("/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/1.31.21\ Data\ Pull/1.31_webofscience.csv")
+pubmed<-read.csv("/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/1.31.21\ Data\ Pull/1.31_pubmed.csv")
+pubmed<-pubmed[c(1:46),] #capture all trials that are from 11/1/20
+c_trials<-read.csv("/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/1.31.21\ Data\ Pull/1.31_clinicaltrials.csv")
+c_trials<-c_trials[c(1:15,17),]
+
+pubmed_notitle<-read.csv("/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/1.31.21\ Data\ Pull/2.7_pubmed_wo_title.csv")
+pubmed_notitle<-pubmed_notitle[c(1:150),] #capture all trials that are from 11/1/20
+```
+
+
+```{r}
+websci1<-dplyr::filter(websci, grepl('trial|Trial', Article.Title)) #title with trial
+websci2<-dplyr::filter(websci1, !grepl('protocol|Protocol|plan', Article.Title)) #get rid of protocol
+
+pubmed1<-dplyr::filter(pubmed, grepl('trial|Trial', Title)) #title with trial
+pubmed2<-dplyr::filter(pubmed1, !grepl('protocol|Protocol|plan', Title)) #get rid of protocol
+
+pubmed1_notitle<-dplyr::filter(pubmed_notitle, !grepl('protocol|Protocol|plan', Title)) #get rid of protocol
+
+colnames(websci2)[which(names(websci2) == "Article.Title")] <- "Title"
+combine<-merge(websci2,pubmed2,by="Title",all=T)
+combine1<-combine[!duplicated(combine$Title), ] #get rid of duplicate titles
+```
+
+
+
+```{r}
+library(openxlsx)
+write.xlsx(combine, "/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/1.31.21\ Data\ Pull/websci_pubmed_combine.xlsx")
+write.xlsx(pubmed1_notitle, "/Users/joycepak/Documents/UNC\ Chapel\ Hill/PCORI\ RA/1.31.21\ Data\ Pull/pubmed_notitle.xlsx")
+```
+
